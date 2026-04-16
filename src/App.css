@@ -1,0 +1,7 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; }
+#gjs { border: none !important; }
+.gjs-one-bg { background-color: #1a1a2e; }
+.gjs-two-bg { background-color: #16213e; }
+.gjs-three-bg { background-color: #0f3460; }
+.gjs-four-bg { background-color: #533483; }
