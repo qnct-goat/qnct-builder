@@ -22,6 +22,16 @@ export default function App() {
       container: '#gjs',
       height: '100%',
       width: 'auto',
+      canvas: {
+        styles: [
+          'https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap',
+          'https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css',
+          'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
+          'https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css',
+          'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css',
+          'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css',
+        ],
+      },
       storageManager: TENANT !== 'default' ? {
         type: 'remote',
         stepsBeforeSave: 3,
@@ -38,8 +48,13 @@ export default function App() {
       plugins: [blocksBasic, presetsWebpage, pluginForms],
       pluginsOpts: {
         [blocksBasic as any]: {},
-        [presetsWebpage as any]: {},
+        [presetsWebpage as any]: {
+          blocksBasicOpts: { flexGrid: true },
+        },
         [pluginForms as any]: {},
+      },
+      layerManager: {
+        appendTo: '.gjs-pn-views-container',
       },
       deviceManager: {
         devices: [
@@ -54,8 +69,10 @@ export default function App() {
     editor.Commands.add('set-device-tablet', { run: (ed: any) => ed.setDevice('Tablet') })
     editor.Commands.add('set-device-mobile', { run: (ed: any) => ed.setDevice('Mobile') })
 
+    // Expose editor globally for external content injection
+    ;(window as any).__gjsEditor = editor
     editorRef.current = editor
-    return () => { editor.destroy(); editorRef.current = null }
+    return () => { editor.destroy(); editorRef.current = null; delete (window as any).__gjsEditor }
   }, [])
 
   return (
