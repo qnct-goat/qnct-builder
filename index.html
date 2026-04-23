@@ -1,12 +1,771 @@
-<!doctype html>
-<html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QNCT Builder</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QNCT Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --font:'DM Sans',system-ui,sans-serif;
+  --r-sm:7px;--r-md:10px;--r-lg:14px;--r-xl:18px;--r-pill:999px;
+  --accent:#6C46FF;
+  --accent-dim:rgba(108,70,255,0.12);
+  --accent-mid:rgba(108,70,255,0.35);
+  --accent-btn:rgba(108,70,255,0.22);
+  --accent-border:rgba(108,70,255,0.45);
+}
+html[data-theme="dark"]{
+  --bg:#09090f;
+  --glass:rgba(255,255,255,0.07);
+  --glass-h:rgba(255,255,255,0.11);
+  --glass-b:rgba(255,255,255,0.13);
+  --glass-t:rgba(255,255,255,0.21);
+  --shine:inset 0 1px 0 rgba(255,255,255,0.17);
+  --t1:rgba(255,255,255,0.92);
+  --t2:rgba(255,255,255,0.52);
+  --t3:rgba(255,255,255,0.28);
+  --inp:rgba(0,0,0,0.28);
+  --inp-b:rgba(255,255,255,0.11);
+  --div:rgba(255,255,255,0.09);
+  --card:rgba(255,255,255,0.06);
+  --card-b:rgba(255,255,255,0.12);
+  --canvas-bg:#12121c;
+  --sh:0 8px 32px rgba(0,0,0,0.5);
+  --sh-sm:0 4px 16px rgba(0,0,0,0.38);
+}
+html[data-theme="light"]{
+  --bg:#eceef6;
+  --glass:rgba(255,255,255,0.65);
+  --glass-h:rgba(255,255,255,0.82);
+  --glass-b:rgba(255,255,255,0.88);
+  --glass-t:rgba(255,255,255,0.97);
+  --shine:inset 0 1px 0 rgba(255,255,255,0.94);
+  --t1:rgba(10,10,22,0.92);
+  --t2:rgba(10,10,22,0.52);
+  --t3:rgba(10,10,22,0.30);
+  --inp:rgba(255,255,255,0.78);
+  --inp-b:rgba(10,10,22,0.12);
+  --div:rgba(10,10,22,0.09);
+  --card:rgba(255,255,255,0.58);
+  --card-b:rgba(255,255,255,0.88);
+  --canvas-bg:#f4f4f8;
+  --sh:0 8px 32px rgba(80,70,160,0.13);
+  --sh-sm:0 4px 16px rgba(80,70,160,0.09);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);height:100vh;overflow:hidden;position:relative;transition:background 0.3s,color 0.3s;}
+
+/* BLOBS */
+.blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;transition:background 0.5s;}
+#blob-a{width:520px;height:520px;background:radial-gradient(circle,rgba(108,70,255,0.34) 0%,transparent 68%);top:-160px;right:-80px;}
+#blob-b{width:440px;height:440px;background:radial-gradient(circle,rgba(24,100,255,0.22) 0%,transparent 68%);bottom:-120px;left:-80px;}
+#blob-c{width:280px;height:280px;background:radial-gradient(circle,rgba(255,60,120,0.16) 0%,transparent 68%);top:45%;left:38%;}
+
+/* GLASS BASE */
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  border:0.5px solid var(--glass-b);
+  border-top-color:var(--glass-t);
+  box-shadow:var(--shine),var(--sh);
+}
+
+/* APP */
+#app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;}
+
+/* NAV */
+nav{
+  height:50px;display:flex;align-items:center;padding:0 14px;gap:10px;
+  flex-shrink:0;position:relative;z-index:50;
+  background:var(--glass);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+  border-bottom:0.5px solid var(--div);
+}
+.nav-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--t1);cursor:pointer;text-decoration:none;}
+.nav-mark{width:26px;height:26px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;transition:background 0.3s;}
+.nav-c{flex:1;display:flex;align-items:center;justify-content:center;}
+.nav-site{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--t1);padding:4px 10px;border-radius:var(--r-pill);border:0.5px solid var(--div);cursor:pointer;}
+.nav-ctrls{display:flex;align-items:center;gap:8px;}
+
+/* ACCENT DOTS */
+.a-picker{display:flex;gap:5px;align-items:center;}
+.a-dot{width:15px;height:15px;border-radius:50%;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;position:relative;}
+.a-dot:hover{transform:scale(1.25);}
+.a-dot.on{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px currentColor;}
+
+/* THEME TOGGLE */
+.t-toggle{width:46px;height:25px;border-radius:var(--r-pill);background:var(--inp);border:0.5px solid var(--inp-b);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+.t-thumb{width:19px;height:19px;border-radius:50%;background:var(--accent);position:absolute;top:2.5px;left:2.5px;transition:transform 0.25s cubic-bezier(.34,1.56,.64,1),background 0.3s;display:flex;align-items:center;justify-content:center;}
+html[data-theme="light"] .t-thumb{transform:translateX(21px);}
+
+/* AVATAR */
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;cursor:pointer;transition:background 0.3s;}
+
+/* =========== DASHBOARD =========== */
+#vd{flex:1;overflow-y:auto;padding:26px 28px;}
+#vd::-webkit-scrollbar{width:3px;}
+#vd::-webkit-scrollbar-thumb{background:var(--div);border-radius:2px;}
+.dh{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;}
+.dh-text h1{font-size:21px;font-weight:600;color:var(--t1);}
+.dh-text p{font-size:13px;color:var(--t2);margin-top:3px;}
+.btn-new{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r-pill);background:var(--accent);color:rgba(255,255,255,0.96);font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:var(--font);transition:opacity 0.15s,transform 0.12s;}
+.btn-new:hover{opacity:0.87;transform:scale(1.02);}
+.btn-new:active{transform:scale(0.97);}
+
+/* STATS */
+.stats{display:flex;gap:12px;margin-bottom:26px;}
+.stat{flex:1;padding:14px 16px;border-radius:var(--r-lg);background:var(--glass);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:0.5px solid var(--glass-b);border-top-color:var(--glass-t);box-shadow:var(--shine);}
+.stat-l{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.stat-v{font-size:24px;font-weight:600;color:var(--t1);}
+.stat-s{font-size:11px;color:var(--t2);margin-top:2px;}
+
+/* GRID */
+.grid-label{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:11px;}
+.sites-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px;}
+
+/* SITE CARD */
+.sc{border-radius:var(--r-lg);border:0.5px solid var(--card-b);background:var(--card);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);box-shadow:var(--shine),var(--sh-sm);overflow:hidden;cursor:pointer;transition:transform 0.18s,background 0.18s,box-shadow 0.18s;}
+.sc:hover{transform:translateY(-2px);background:var(--glass-h);box-shadow:var(--shine),var(--sh);}
+.sc-thumb{height:126px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.sc-char{font-size:52px;font-weight:700;color:rgba(255,255,255,0.11);position:relative;z-index:1;}
+html[data-theme="light"] .sc-char{color:rgba(0,0,20,0.07);}
+.sc-info{padding:11px 13px;}
+.sc-name{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:4px;}
+.sc-domain{font-size:11px;color:var(--t2);margin-bottom:9px;}
+.sc-meta{display:flex;align-items:center;justify-content:space-between;}
+.badge-live{font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--r-pill);background:rgba(61,217,100,0.15);color:#3DD964;}
+.badge-draft{font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--r-pill);background:var(--inp);color:var(--t2);}
+.sc-date{font-size:11px;color:var(--t3);}
+.sc-actions{display:flex;gap:6px;padding:9px 13px 12px;border-top:0.5px solid var(--div);}
+.sc-btn{flex:1;padding:7px;border-radius:var(--r-sm);border:0.5px solid var(--inp-b);background:var(--inp);color:var(--t2);font-size:11px;font-weight:500;cursor:pointer;text-align:center;transition:color 0.14s,background 0.14s;font-family:var(--font);}
+.sc-btn:hover{color:var(--t1);background:var(--glass-h);}
+.sc-btn.p{color:#fff;background:var(--accent);border-color:transparent;transition:opacity 0.15s;}
+.sc-btn.p:hover{opacity:0.84;}
+.sc-add{border-radius:var(--r-lg);border:0.5px dashed var(--div);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:238px;cursor:pointer;color:var(--t3);transition:color 0.2s,border-color 0.2s;}
+.sc-add:hover{color:var(--t2);border-color:var(--accent);}
+.sc-add-lbl{font-size:13px;font-weight:500;}
+.sc-add-sub{font-size:11px;opacity:0.65;}
+
+/* =========== BUILDER =========== */
+#vb{flex:1;display:none;position:relative;overflow:hidden;}
+#vb.on{display:block;}
+
+/* FLOATING TOOLBAR */
+.toolbar{
+  position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  z-index:40;display:flex;align-items:center;gap:2px;padding:5px 8px;
+  border-radius:var(--r-pill);
+  background:var(--glass);backdrop-filter:blur(28px) saturate(200%);-webkit-backdrop-filter:blur(28px) saturate(200%);
+  border:0.5px solid var(--glass-b);border-top-color:var(--glass-t);
+  box-shadow:var(--shine),var(--sh);white-space:nowrap;
+}
+.tb-sep{width:0.5px;height:20px;background:var(--div);margin:0 4px;}
+.tb-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);border:none;background:transparent;transition:background 0.12s,color 0.12s;position:relative;}
+.tb-btn:hover{background:var(--glass-h);color:var(--t1);}
+.tb-btn.on{background:var(--accent);color:#fff;}
+.tb-act{padding:5px 12px;border-radius:var(--r-pill);font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:var(--font);transition:opacity 0.15s;}
+.tb-act.out{background:transparent;border:0.5px solid var(--glass-b);color:var(--t2);}
+.tb-act.out:hover{color:var(--t1);}
+.tb-act.fil{background:var(--accent);color:rgba(255,255,255,0.95);transition:background 0.3s,opacity 0.15s;}
+.tb-act.fil:hover{opacity:0.84;}
+.back-btn{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--t2);cursor:pointer;padding:4px 7px;border-radius:7px;transition:color 0.14s,background 0.14s;border:none;background:transparent;font-family:var(--font);}
+.back-btn:hover{color:var(--t1);background:var(--glass-h);}
+
+/* PANELS */
+.bl,.br{
+  position:absolute;top:52px;bottom:10px;
+  border-radius:var(--r-lg);overflow:hidden;z-index:30;
+  display:flex;flex-direction:column;
+  background:var(--glass);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+  border:0.5px solid var(--glass-b);border-top-color:var(--glass-t);
+  box-shadow:var(--shine),var(--sh);
+}
+.bl{left:10px;width:192px;}
+.br{right:10px;width:212px;}
+
+/* CANVAS AREA */
+.bc{
+  position:absolute;left:212px;right:232px;top:52px;bottom:10px;
+  border-radius:var(--r-md);background:var(--canvas-bg);
+  border:0.5px solid var(--div);overflow:hidden;
+}
+
+/* PANEL TABS */
+.ptabs{display:flex;border-bottom:0.5px solid var(--div);padding:0 6px;flex-shrink:0;}
+.ptab{padding:9px 8px;font-size:11px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:1.5px solid transparent;margin-bottom:-0.5px;transition:color 0.14s;white-space:nowrap;}
+.ptab.on{color:var(--t1);border-bottom-color:var(--accent);}
+.ptab:hover:not(.on){color:var(--t2);}
+
+/* PANEL BODY */
+.pbody{flex:1;overflow-y:auto;}
+.pbody::-webkit-scrollbar{width:3px;}
+.pbody::-webkit-scrollbar-thumb{background:var(--div);border-radius:2px;}
+
+/* LAYERS */
+.li{padding:5px 10px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t2);cursor:pointer;transition:background 0.1s,color 0.1s;}
+.li:hover{background:var(--glass-h);color:var(--t1);}
+.li.on{background:var(--accent-dim);color:var(--t1);border-left:2px solid var(--accent);}
+.li.on .ldot{background:var(--accent);}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--t3);flex-shrink:0;}
+.lname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ltag{font-size:9px;padding:1px 5px;border-radius:var(--r-pill);background:var(--accent-btn);color:var(--accent);flex-shrink:0;border:0.5px solid var(--accent-border);}
+
+/* BLOCKS GRID */
+.blocks-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px;}
+.block-item{background:var(--inp);border:0.5px solid var(--inp-b);border-radius:var(--r-sm);padding:8px;cursor:grab;display:flex;flex-direction:column;align-items:center;gap:5px;transition:background 0.14s,border-color 0.14s;}
+.block-item:hover{background:var(--glass-h);border-color:var(--accent-border);}
+.block-icon{width:28px;height:20px;border-radius:4px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;}
+.block-lbl{font-size:10px;color:var(--t2);text-align:center;}
+
+/* PROPS */
+.ps{padding:10px 12px;border-bottom:0.5px solid var(--div);}
+.pl{font-size:9px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.pi{background:var(--inp);border:0.5px solid var(--inp-b);border-radius:var(--r-sm);padding:5px 8px;}
+.pil{font-size:9px;color:var(--t3);margin-bottom:1px;}
+.piv{font-size:12px;font-weight:500;color:var(--t1);}
+.pif{background:var(--inp);border:0.5px solid var(--inp-b);border-radius:var(--r-sm);padding:5px 8px;display:flex;align-items:center;gap:7px;}
+.cswatch{width:20px;height:20px;border-radius:4px;flex-shrink:0;border:0.5px solid var(--inp-b);}
+
+/* PANEL FOOTER */
+.pfooter{padding:8px 10px;border-top:0.5px solid var(--div);background:rgba(0,0,0,0.08);flex-shrink:0;}
+html[data-theme="light"] .pfooter{background:rgba(0,0,0,0.04);}
+.pf-label{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.ptabs2{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+.ptab2{padding:3px 8px;border-radius:var(--r-pill);font-size:10px;cursor:pointer;color:var(--t3);transition:background 0.14s,color 0.14s;}
+.ptab2.on{background:var(--accent-dim);color:var(--t1);border:0.5px solid var(--accent-border);}
+.ptab2:hover:not(.on){color:var(--t2);}
+.ptab2-add{width:18px;height:18px;border-radius:50%;border:0.5px solid var(--div);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:color 0.14s,border-color 0.14s;}
+.ptab2-add:hover{color:var(--t1);border-color:var(--accent);}
+
+/* CANVAS CONTENT */
+.cpage{width:86%;margin:18px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.38);}
+html[data-theme="light"] .cpage{box-shadow:0 8px 40px rgba(80,70,150,0.16);}
+.cnav{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;background:#0d0d1a;}
+.chero{padding:28px 18px 24px;background:linear-gradient(135deg,#0d0d1a 0%,#1c1048 100%);text-align:center;position:relative;overflow:hidden;}
+.cfeat{background:#f8f8fc;padding:14px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.cfc{background:#fff;border-radius:8px;padding:12px;border:0.5px solid #ebebf2;}
+.cfi{width:20px;height:20px;border-radius:6px;margin-bottom:8px;}
+.sel-wrap{position:relative;display:inline-block;}
+.sel-tag{position:absolute;top:-24px;left:0;background:var(--accent);color:#fff;font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px 4px 4px 0;white-space:nowrap;}
+.h{position:absolute;width:7px;height:7px;background:#fff;border:1.5px solid var(--accent);border-radius:1.5px;}
+.h-tl{top:-4px;left:-4px;}.h-tr{top:-4px;right:-4px;}.h-bl{bottom:-4px;left:-4px;}.h-br{bottom:-4px;right:-4px;}
+.sel-el{outline:1.5px solid var(--accent);outline-offset:2px;padding:7px 18px;border-radius:20px;background:var(--accent);display:inline-block;opacity:0.9;}
+
+/* CANVAS BAR */
+.cbar{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:6px;padding:5px 12px;
+  border-radius:var(--r-pill);
+  background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:0.5px solid var(--glass-b);border-top-color:var(--glass-t);
+  box-shadow:var(--shine);z-index:10;font-size:11px;color:var(--t2);white-space:nowrap;
+}
+.cbar-sep{width:0.5px;height:12px;background:var(--div);}
+
+/* ACTIVE ELEMENT BADGE in right panel */
+.el-tag{padding:10px 12px;border-bottom:0.5px solid var(--div);display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.el-icon{width:20px;height:20px;border-radius:5px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:0.5px solid var(--accent-border);}
+.el-dot{margin-left:auto;width:5px;height:5px;border-radius:50%;background:var(--accent);}
+</style>
+</head>
+<body>
+
+<div class="blobs">
+  <div class="blob" id="blob-a"></div>
+  <div class="blob" id="blob-b" style="width:440px;height:440px;background:radial-gradient(circle,rgba(24,100,255,0.22) 0%,transparent 68%);bottom:-120px;left:-80px;"></div>
+  <div class="blob" id="blob-c" style="width:280px;height:280px;background:radial-gradient(circle,rgba(255,60,120,0.16) 0%,transparent 68%);top:45%;left:38%;"></div>
+</div>
+
+<div id="app">
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" onclick="toDash()">
+      <div class="nav-mark" id="navMark">
+        <svg width="12" height="12" viewBox="0 0 12 12"><polygon points="6,1.5 10.5,10 1.5,10" fill="rgba(255,255,255,0.95)"/></svg>
+      </div>
+      QNCT Builder
+    </a>
+    <div class="nav-c" id="navC"></div>
+    <div class="nav-ctrls">
+      <div class="a-picker" id="aPicker">
+        <div class="a-dot on" data-a="purple" style="background:#6C46FF;color:#6C46FF;" title="Purple"></div>
+        <div class="a-dot" data-a="mint"   style="background:#3DD9A4;color:#3DD9A4;" title="Mint"></div>
+        <div class="a-dot" data-a="teal"   style="background:#00B8C8;color:#00B8C8;" title="Teal"></div>
+        <div class="a-dot" data-a="blue"   style="background:#4BA3FF;color:#4BA3FF;" title="Light Blue"></div>
+        <div class="a-dot" data-a="rosa" style="background:#F06BA3;color:#F06BA3;" title="Rosa"></div>
+        <div class="a-dot" data-a="gold"   style="background:#C8A96E;color:#C8A96E;" title="Gold"></div>
+      </div>
+      <div style="width:0.5px;height:20px;background:var(--div);"></div>
+      <div class="t-toggle" id="tToggle">
+        <div class="t-thumb" id="tThumb">
+          <svg id="ico-d" width="11" height="11" viewBox="0 0 11 11"><path d="M5.5 1a4.5 4.5 0 1 0 4.3 5.8A3.5 3.5 0 0 1 5.5 1z" fill="rgba(255,255,255,0.94)"/></svg>
+          <svg id="ico-l" style="display:none" width="11" height="11" viewBox="0 0 11 11"><circle cx="5.5" cy="5.5" r="2.2" fill="rgba(255,255,255,0.94)"/><line x1="5.5" y1="0" x2="5.5" y2="1.5" stroke="rgba(255,255,255,0.9)" stroke-width="1.3" stroke-linecap="round"/><line x1="5.5" y1="9.5" x2="5.5" y2="11" stroke="rgba(255,255,255,0.9)" stroke-width="1.3" stroke-linecap="round"/><line x1="0" y1="5.5" x2="1.5" y2="5.5" stroke="rgba(255,255,255,0.9)" stroke-width="1.3" stroke-linecap="round"/><line x1="9.5" y1="5.5" x2="11" y2="5.5" stroke="rgba(255,255,255,0.9)" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <div class="avatar" id="av">JC</div>
+    </div>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <div id="vd">
+    <div class="dh">
+      <div class="dh-text">
+        <h1>My Websites</h1>
+        <p>Manage and edit all your projects</p>
+      </div>
+      <button class="btn-new" id="btnNew" onclick="alert('New site wizard — coming soon!')">
+        <svg width="12" height="12" viewBox="0 0 12 12"><line x1="6" y1="1.5" x2="6" y2="10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="1.5" y1="6" x2="10.5" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        New site
+      </button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-l">Total Sites</div><div class="stat-v">5</div><div class="stat-s">across 3 brands</div></div>
+      <div class="stat"><div class="stat-l">Live</div><div class="stat-v" style="color:#3DD964;">3</div><div class="stat-s">published</div></div>
+      <div class="stat"><div class="stat-l">Draft</div><div class="stat-v" style="color:var(--t2);">2</div><div class="stat-s">in progress</div></div>
+      <div class="stat"><div class="stat-l">Last Deploy</div><div class="stat-v" style="font-size:18px;">2h ago</div><div class="stat-s">qnct.io</div></div>
+    </div>
+
+    <div class="grid-label">All sites</div>
+    <div class="sites-grid">
+
+      <div class="sc" onclick="toBuilder('QNCT.io','qnct.io')">
+        <div class="sc-thumb" style="background:linear-gradient(135deg,#1a0e38,#2d1b69);">
+          <div style="position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(108,70,255,0.4) 0%,transparent 70%);top:-30px;right:-20px;"></div>
+          <div class="sc-char">Q</div>
+        </div>
+        <div class="sc-info">
+          <div class="sc-name">QNCT.io</div><div class="sc-domain">qnct.io</div>
+          <div class="sc-meta"><span class="badge-live">Live</span><span class="sc-date">Today</span></div>
+        </div>
+        <div class="sc-actions">
+          <button class="sc-btn" onclick="event.stopPropagation()">Settings</button>
+          <button class="sc-btn p" onclick="event.stopPropagation();toBuilder('QNCT.io','qnct.io')">Edit</button>
+        </div>
+      </div>
+
+      <div class="sc" onclick="toBuilder('XTHETICS','xthetics.com')">
+        <div class="sc-thumb" style="background:linear-gradient(135deg,#0a1a10,#0d3020);">
+          <div style="position:absolute;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(61,217,164,0.35) 0%,transparent 70%);bottom:-15px;left:-10px;"></div>
+          <div class="sc-char">X</div>
+        </div>
+        <div class="sc-info">
+          <div class="sc-name">XTHETICS</div><div class="sc-domain">xthetics.com</div>
+          <div class="sc-meta"><span class="badge-draft">Draft</span><span class="sc-date">3 days ago</span></div>
+        </div>
+        <div class="sc-actions">
+          <button class="sc-btn" onclick="event.stopPropagation()">Settings</button>
+          <button class="sc-btn p" onclick="event.stopPropagation();toBuilder('XTHETICS','xthetics.com')">Edit</button>
+        </div>
+      </div>
+
+      <div class="sc" onclick="toBuilder('JC87 Portfolio','jc87.qnct.io')">
+        <div class="sc-thumb" style="background:linear-gradient(135deg,#1a1000,#302000);">
+          <div style="position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(201,162,39,0.38) 0%,transparent 70%);top:-30px;right:-20px;"></div>
+          <div class="sc-char">J</div>
+        </div>
+        <div class="sc-info">
+          <div class="sc-name">JC87 Portfolio</div><div class="sc-domain">jc87.qnct.io</div>
+          <div class="sc-meta"><span class="badge-live">Live</span><span class="sc-date">1 week ago</span></div>
+        </div>
+        <div class="sc-actions">
+          <button class="sc-btn" onclick="event.stopPropagation()">Settings</button>
+          <button class="sc-btn p" onclick="event.stopPropagation();toBuilder('JC87 Portfolio','jc87.qnct.io')">Edit</button>
+        </div>
+      </div>
+
+      <div class="sc" onclick="toBuilder('FINLINK','finlink.io')">
+        <div class="sc-thumb" style="background:linear-gradient(135deg,#001020,#002040);">
+          <div style="position:absolute;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(75,163,255,0.35) 0%,transparent 70%);top:-15px;right:-10px;"></div>
+          <div class="sc-char">F</div>
+        </div>
+        <div class="sc-info">
+          <div class="sc-name">FINLINK</div><div class="sc-domain">finlink.io</div>
+          <div class="sc-meta"><span class="badge-live">Live</span><span class="sc-date">2 weeks ago</span></div>
+        </div>
+        <div class="sc-actions">
+          <button class="sc-btn" onclick="event.stopPropagation()">Settings</button>
+          <button class="sc-btn p" onclick="event.stopPropagation();toBuilder('FINLINK','finlink.io')">Edit</button>
+        </div>
+      </div>
+
+      <div class="sc" onclick="toBuilder('DLAC','dlac.qnct.io')">
+        <div class="sc-thumb" style="background:linear-gradient(135deg,#1a0010,#300020);">
+          <div style="position:absolute;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(255,60,120,0.3) 0%,transparent 70%);bottom:-10px;right:-10px;"></div>
+          <div class="sc-char">D</div>
+        </div>
+        <div class="sc-info">
+          <div class="sc-name">DLAC</div><div class="sc-domain">dlac.qnct.io</div>
+          <div class="sc-meta"><span class="badge-draft">Draft</span><span class="sc-date">3 weeks ago</span></div>
+        </div>
+        <div class="sc-actions">
+          <button class="sc-btn" onclick="event.stopPropagation()">Settings</button>
+          <button class="sc-btn p" onclick="event.stopPropagation();toBuilder('DLAC','dlac.qnct.io')">Edit</button>
+        </div>
+      </div>
+
+      <div class="sc-add" onclick="alert('New site wizard — coming soon!')">
+        <svg width="30" height="30" viewBox="0 0 30 30"><line x1="15" y1="4" x2="15" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="15" x2="26" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="sc-add-lbl">New website</span>
+        <span class="sc-add-sub">Blank or template</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BUILDER -->
+  <div id="vb">
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <button class="back-btn" onclick="toDash()">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Sites
+      </button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn on" title="Select (V)">
+        <svg width="13" height="13" viewBox="0 0 13 13"><path d="M2.5 2L2.5 9.5L5.2 7.3L7.2 11.5L8.8 10.8L6.8 6.6L10.5 6.6Z" fill="currentColor"/></svg>
+      </button>
+      <button class="tb-btn" title="Frame (F)" onclick="setTool(this)">
+        <svg width="13" height="13" viewBox="0 0 13 13"><rect x="2" y="2" width="9" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+      </button>
+      <button class="tb-btn" title="Text (T)" onclick="setTool(this)">
+        <svg width="13" height="13" viewBox="0 0 13 13"><path d="M2.5 3.5h8M6.5 3.5v6M4.5 9.5h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      </button>
+      <button class="tb-btn" title="Image (I)" onclick="setTool(this)">
+        <svg width="13" height="13" viewBox="0 0 13 13"><rect x="1.5" y="2.5" width="10" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="4.5" cy="5.2" r="1" fill="currentColor" opacity="0.55"/><path d="M1.5 9.5l3-3 2.5 2.5 2-2 2.5 2.5" stroke="currentColor" stroke-width="1" fill="none" opacity="0.55"/></svg>
+      </button>
+      <button class="tb-btn" title="Component (C)" onclick="setTool(this)">
+        <svg width="13" height="13" viewBox="0 0 13 13"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" fill="currentColor" opacity="0.55"/><rect x="7" y="1.5" width="4.5" height="4.5" rx="1" fill="currentColor" opacity="0.3"/><rect x="1.5" y="7" width="4.5" height="4.5" rx="1" fill="currentColor" opacity="0.3"/><rect x="7" y="7" width="4.5" height="4.5" rx="1" fill="currentColor" opacity="0.55"/></svg>
+      </button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" title="Undo">
+        <svg width="13" height="13" viewBox="0 0 13 13"><path d="M3 5H8a3 3 0 0 1 0 6H5" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M3 3L1 5l2 2" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="tb-btn" title="Redo">
+        <svg width="13" height="13" viewBox="0 0 13 13"><path d="M10 5H5a3 3 0 0 0 0 6h3" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M10 3l2 2-2 2" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="tb-sep"></div>
+      <button class="tb-act out">Preview</button>
+      <button class="tb-act fil" id="pubBtn">Publish</button>
+    </div>
+
+    <!-- LEFT PANEL -->
+    <div class="bl">
+      <div class="ptabs">
+        <div class="ptab on" onclick="swTab(this,0)">Layers</div>
+        <div class="ptab" onclick="swTab(this,1)">Blocks</div>
+        <div class="ptab" onclick="swTab(this,2)">Assets</div>
+      </div>
+      <div class="pbody" id="lpanel">
+        <!-- LAYERS -->
+        <div id="tab-0">
+          <div class="li" style="padding-left:10px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.4"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.5"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span class="lname">Page — Home</span>
+          </div>
+          <div class="li" style="padding-left:18px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.35"><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <div class="ldot"></div><span class="lname">Navbar</span>
+          </div>
+          <div class="li" style="padding-left:18px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.4"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <div class="ldot"></div><span class="lname">Hero Section</span>
+          </div>
+          <div class="li" style="padding-left:26px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.2"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <div class="ldot"></div><span class="lname">Headline</span>
+          </div>
+          <div class="li" style="padding-left:26px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.2"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <div class="ldot"></div><span class="lname">Subline</span>
+          </div>
+          <div class="li on" style="padding-left:26px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.2"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <div class="ldot"></div><span class="lname">CTA Button</span>
+            <span class="ltag">btn</span>
+          </div>
+          <div class="li" style="padding-left:18px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.35"><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <div class="ldot"></div><span class="lname">Features Grid</span>
+          </div>
+          <div class="li" style="padding-left:18px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.35"><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <div class="ldot"></div><span class="lname">Testimonials</span>
+          </div>
+          <div class="li" style="padding-left:18px;">
+            <svg width="10" height="10" viewBox="0 0 10 10" opacity="0.35"><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+            <div class="ldot"></div><span class="lname">Footer</span>
+          </div>
+        </div>
+        <!-- BLOCKS -->
+        <div id="tab-1" style="display:none;">
+          <div class="blocks-grid" style="padding:8px;">
+            <div class="block-item"><div class="block-icon"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="1" y="1" width="12" height="8" rx="2" fill="none" stroke="var(--accent)" stroke-width="1.2"/></svg></div><span class="block-lbl">Button</span></div>
+            <div class="block-item"><div class="block-icon"><svg width="14" height="10" viewBox="0 0 14 10"><line x1="1" y1="3" x2="13" y2="3" stroke="var(--accent)" stroke-width="1.2"/><line x1="1" y1="6" x2="10" y2="6" stroke="var(--accent)" stroke-width="1.2"/></svg></div><span class="block-lbl">Text</span></div>
+            <div class="block-item"><div class="block-icon"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="1" y="1" width="12" height="8" rx="1.5" fill="none" stroke="var(--accent)" stroke-width="1.2"/><circle cx="4" cy="4" r="1" fill="var(--accent)" opacity="0.5"/><path d="M1 8l3-3 3 3 2-2 3 2" stroke="var(--accent)" stroke-width="1" fill="none" opacity="0.6"/></svg></div><span class="block-lbl">Image</span></div>
+            <div class="block-item"><div class="block-icon"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="1" y="1" width="5.5" height="4" rx="1" fill="var(--accent)" opacity="0.35"/><rect x="7.5" y="1" width="5.5" height="4" rx="1" fill="var(--accent)" opacity="0.2"/><rect x="1" y="6" width="5.5" height="3" rx="1" fill="var(--accent)" opacity="0.2"/><rect x="7.5" y="6" width="5.5" height="3" rx="1" fill="var(--accent)" opacity="0.35"/></svg></div><span class="block-lbl">Grid</span></div>
+            <div class="block-item"><div class="block-icon"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="1" y="2" width="12" height="6" rx="1" fill="none" stroke="var(--accent)" stroke-width="1.2"/><line x1="5" y1="2" x2="5" y2="8" stroke="var(--accent)" stroke-width="1" opacity="0.5"/><line x1="9" y1="2" x2="9" y2="8" stroke="var(--accent)" stroke-width="1" opacity="0.5"/></svg></div><span class="block-lbl">Columns</span></div>
+            <div class="block-item"><div class="block-icon"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="1" y="1" width="12" height="8" rx="1.5" fill="none" stroke="var(--accent)" stroke-width="1.2"/><line x1="1" y1="4" x2="13" y2="4" stroke="var(--accent)" stroke-width="1" opacity="0.5"/></svg></div><span class="block-lbl">Section</span></div>
+            <div class="block-item"><div class="block-icon"><svg width="14" height="10" viewBox="0 0 14 10"><rect x="1" y="2" width="12" height="6" rx="1" fill="none" stroke="var(--accent)" stroke-width="1.2"/><line x1="4" y1="5" x2="10" y2="5" stroke="var(--accent)" stroke-width="1" opacity="0.5"/></svg></div><span class="block-lbl">Input</span></div>
+            <div class="block-item"><div class="block-icon"><svg width="14" height="10" viewBox="0 0 14 10"><path d="M7 2l1.5 3H11l-2 1.8L9.8 10 7 8.2 4.2 10 5 6.8 3 5h2.5Z" fill="var(--accent)" opacity="0.6"/></svg></div><span class="block-lbl">Icon</span></div>
+          </div>
+        </div>
+        <!-- ASSETS -->
+        <div id="tab-2" style="display:none;padding:8px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div style="background:var(--inp);border:0.5px solid var(--inp-b);border-radius:var(--r-sm);height:60px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <div style="width:40px;height:28px;background:linear-gradient(135deg,rgba(108,70,255,0.3),rgba(24,100,255,0.2));border-radius:3px;"></div>
+            </div>
+            <div style="background:var(--inp);border:0.5px solid var(--inp-b);border-radius:var(--r-sm);height:60px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+              <div style="width:40px;height:28px;background:linear-gradient(135deg,rgba(61,217,164,0.3),rgba(0,184,184,0.2));border-radius:3px;"></div>
+            </div>
+            <div style="background:var(--inp);border:0.5px solid var(--inp-b);border-radius:var(--r-sm);height:60px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-style:dashed;color:var(--t3);">
+              <svg width="16" height="16" viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pfooter">
+        <div class="pf-label">Pages</div>
+        <div class="ptabs2">
+          <div class="ptab2 on">Home</div>
+          <div class="ptab2">About</div>
+          <div class="ptab2">Pricing</div>
+          <div class="ptab2-add">
+            <svg width="8" height="8" viewBox="0 0 8 8"><line x1="4" y1="1" x2="4" y2="7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="4" x2="7" y2="4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="bc">
+      <div class="cpage">
+        <div class="cnav">
+          <div style="width:46px;height:8px;border-radius:4px;background:var(--accent);opacity:0.85;"></div>
+          <div style="display:flex;gap:10px;"><div style="width:22px;height:5px;border-radius:3px;background:rgba(255,255,255,0.25);"></div><div style="width:22px;height:5px;border-radius:3px;background:rgba(255,255,255,0.25);"></div><div style="width:22px;height:5px;border-radius:3px;background:rgba(255,255,255,0.25);"></div></div>
+          <div style="width:42px;height:19px;border-radius:10px;background:var(--accent);opacity:0.85;"></div>
+        </div>
+        <div class="chero">
+          <div id="heroBlob" style="position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(108,70,255,0.32) 0%,transparent 70%);top:-50px;right:-20px;"></div>
+          <div style="width:56%;height:10px;border-radius:5px;background:rgba(255,255,255,0.88);margin:0 auto 8px;"></div>
+          <div style="width:36%;height:7px;border-radius:4px;background:rgba(255,255,255,0.38);margin:0 auto 20px;"></div>
+          <div style="text-align:center;">
+            <div class="sel-wrap">
+              <div class="sel-tag">Button</div>
+              <div class="h h-tl"></div><div class="h h-tr"></div><div class="h h-bl"></div><div class="h h-br"></div>
+              <div class="sel-el"><div style="width:70px;height:8px;border-radius:4px;background:rgba(255,255,255,0.88);"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="cfeat">
+          <div class="cfc"><div class="cfi" id="fi1" style="background:rgba(108,70,255,0.14);"></div><div style="width:80%;height:6px;border-radius:3px;background:#dde;margin-bottom:5px;"></div><div style="width:60%;height:5px;border-radius:3px;background:#eef;"></div></div>
+          <div class="cfc"><div class="cfi" style="background:rgba(24,110,255,0.12);"></div><div style="width:80%;height:6px;border-radius:3px;background:#dde;margin-bottom:5px;"></div><div style="width:60%;height:5px;border-radius:3px;background:#eef;"></div></div>
+          <div class="cfc"><div class="cfi" style="background:rgba(255,70,130,0.12);"></div><div style="width:80%;height:6px;border-radius:3px;background:#dde;margin-bottom:5px;"></div><div style="width:60%;height:5px;border-radius:3px;background:#eef;"></div></div>
+        </div>
+      </div>
+      <!-- GrapesJS mounts here in production -->
+      <div id="gjs" style="display:none;"></div>
+
+      <div class="cbar">
+        <svg width="11" height="11" viewBox="0 0 11 11"><rect x="1" y="1.5" width="9" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/><line x1="3.5" y1="9.5" x2="7.5" y2="9.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+        Desktop
+        <div class="cbar-sep"></div>
+        <svg width="10" height="11" viewBox="0 0 10 11"><rect x="2.5" y="1" width="5" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
+        Mobile
+        <div class="cbar-sep"></div>
+        <span>75%</span>
+        <svg style="opacity:0.4" width="10" height="10" viewBox="0 0 10 10"><line x1="2" y1="5" x2="8" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <svg style="opacity:0.4" width="10" height="10" viewBox="0 0 10 10"><line x1="5" y1="2" x2="5" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="2" y1="5" x2="8" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="br">
+      <div class="ptabs">
+        <div class="ptab on" onclick="swRTab(this,0)">Style</div>
+        <div class="ptab" onclick="swRTab(this,1)">Props</div>
+        <div class="ptab" onclick="swRTab(this,2)">Events</div>
+      </div>
+      <div class="pbody">
+        <div id="rtab-0">
+          <div class="el-tag">
+            <div class="el-icon">
+              <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="2.5" width="7" height="4" rx="2" fill="var(--accent)" opacity="0.9"/></svg>
+            </div>
+            <span style="font-size:12px;font-weight:500;color:var(--t1);">CTA Button</span>
+            <div class="el-dot"></div>
+          </div>
+          <div class="ps">
+            <div class="pl">Layout</div>
+            <div class="pgrid">
+              <div class="pi"><div class="pil">Width</div><div class="piv">Auto</div></div>
+              <div class="pi"><div class="pil">Height</div><div class="piv">36px</div></div>
+              <div class="pi"><div class="pil">Pad H</div><div class="piv">20px</div></div>
+              <div class="pi"><div class="pil">Pad V</div><div class="piv">8px</div></div>
+            </div>
+          </div>
+          <div class="ps">
+            <div class="pl">Style</div>
+            <div class="pif" style="margin-bottom:6px;">
+              <div class="cswatch" id="bgSwatch" style="background:var(--accent);"></div>
+              <div style="flex:1;"><div class="pil">Background</div><div class="piv" id="accentHex">#6C46FF</div></div>
+            </div>
+            <div class="pif" style="margin-bottom:6px;">
+              <div class="cswatch" style="background:rgba(255,255,255,0.9);"></div>
+              <div style="flex:1;"><div class="pil">Text color</div><div class="piv">#FFFFFF</div></div>
+            </div>
+            <div class="pgrid">
+              <div class="pi"><div class="pil">Radius</div><div class="piv">20px</div></div>
+              <div class="pi"><div class="pil">Border</div><div class="piv">None</div></div>
+              <div class="pi"><div class="pil">Opacity</div><div class="piv">100%</div></div>
+              <div class="pi"><div class="pil">Shadow</div><div class="piv">None</div></div>
+            </div>
+          </div>
+          <div class="ps">
+            <div class="pl">Typography</div>
+            <div class="pgrid">
+              <div class="pi"><div class="pil">Size</div><div class="piv">14px</div></div>
+              <div class="pi"><div class="pil">Weight</div><div class="piv">500</div></div>
+              <div class="pi"><div class="pil">Align</div><div class="piv">Center</div></div>
+              <div class="pi"><div class="pil">Tracking</div><div class="piv">0em</div></div>
+            </div>
+          </div>
+          <div class="ps">
+            <div class="pl">Interactions</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;background:var(--inp);border:0.5px solid var(--inp-b);border-radius:var(--r-sm);padding:7px 10px;">
+              <span style="font-size:12px;color:var(--t2);">On Click</span>
+              <span style="padding:2px 8px;border-radius:var(--r-pill);background:var(--accent-btn);border:0.5px solid var(--accent-border);font-size:10px;color:var(--accent);">Navigate →</span>
+            </div>
+          </div>
+        </div>
+        <div id="rtab-1" style="display:none;padding:12px;">
+          <div style="font-size:12px;color:var(--t2);text-align:center;padding:20px 0;">No custom props</div>
+        </div>
+        <div id="rtab-2" style="display:none;padding:12px;">
+          <div style="font-size:12px;color:var(--t2);text-align:center;padding:20px 0;">No events attached</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /vb -->
+</div><!-- /app -->
+
+<script>
+const ACCENTS = {
+  purple:{ hex:'#6C46FF', r:108,g:70, b:255 },
+  mint:  { hex:'#3DD9A4', r:61, g:217,b:164 },
+  teal:  { hex:'#00B8C8', r:0,  g:184,b:200 },
+  blue:  { hex:'#4BA3FF', r:75, g:163,b:255 },
+  rosa:   { hex:'#F06BA3', r:240,g:107,b:163 },
+  gold:   { hex:'#C8A96E', r:200,g:169,b:110 },
+};
+let theme='dark', accent='purple';
+
+function applyAccent(name){
+  const a = ACCENTS[name]; if(!a) return;
+  accent = name;
+  const R = document.documentElement;
+  R.style.setProperty('--accent', a.hex);
+  R.style.setProperty('--accent-dim',   `rgba(${a.r},${a.g},${a.b},0.12)`);
+  R.style.setProperty('--accent-mid',   `rgba(${a.r},${a.g},${a.b},0.35)`);
+  R.style.setProperty('--accent-btn',   `rgba(${a.r},${a.g},${a.b},0.20)`);
+  R.style.setProperty('--accent-border',`rgba(${a.r},${a.g},${a.b},0.45)`);
+
+  // blob A
+  document.getElementById('blob-a').style.background =
+    `radial-gradient(circle,rgba(${a.r},${a.g},${a.b},0.34) 0%,transparent 68%)`;
+
+  // hero blob
+  const hb = document.getElementById('heroBlob');
+  if(hb) hb.style.background =
+    `radial-gradient(circle,rgba(${a.r},${a.g},${a.b},0.32) 0%,transparent 70%)`;
+
+  // feat icon 1
+  const fi = document.getElementById('fi1');
+  if(fi) fi.style.background = `rgba(${a.r},${a.g},${a.b},0.14)`;
+
+  // right panel hex display
+  const ah = document.getElementById('accentHex'); if(ah) ah.textContent = a.hex;
+  const bs = document.getElementById('bgSwatch');  if(bs) bs.style.background = a.hex;
+
+  // active dot
+  document.querySelectorAll('.a-dot').forEach(d => d.classList.toggle('on', d.dataset.a === name));
+
+  // static accent-colored elements
+  document.getElementById('navMark').style.background = a.hex;
+  document.getElementById('av').style.background = a.hex;
+  document.getElementById('tThumb').style.background = a.hex;
+  document.getElementById('btnNew').style.background = a.hex;
+  document.getElementById('pubBtn').style.background = a.hex;
+  document.querySelectorAll('.sc-btn.p').forEach(el => el.style.background = a.hex);
+  document.querySelectorAll('.tb-btn.on').forEach(el => el.style.background = a.hex);
+
+  // canvas navbar accent strips
+  document.querySelectorAll('.cnav > div:first-child, .cnav > div:last-child')
+    .forEach(el => el.style.background = a.hex);
+}
+
+function toggleTheme(){
+  theme = theme==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('ico-d').style.display = theme==='dark'?'block':'none';
+  document.getElementById('ico-l').style.display = theme==='light'?'block':'none';
+}
+
+function toBuilder(name, domain){
+  document.getElementById('vd').style.display='none';
+  document.getElementById('vb').classList.add('on');
+  document.getElementById('navC').innerHTML = `
+    <div class="nav-site">
+      <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="none" stroke="var(--accent)" stroke-width="1.1"/><circle cx="4" cy="4" r="0.9" fill="var(--accent)"/></svg>
+      ${name}
+      <svg width="10" height="10" viewBox="0 0 10 10" style="opacity:0.4"><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+    </div>`;
+}
+
+function toDash(){
+  document.getElementById('vd').style.display='block';
+  document.getElementById('vb').classList.remove('on');
+  document.getElementById('navC').innerHTML='';
+}
+
+function swTab(el, idx){
+  el.closest('.bl').querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  for(let i=0;i<3;i++){
+    const t = document.getElementById(`tab-${i}`);
+    if(t) t.style.display = i===idx?'block':'none';
+  }
+}
+
+function swRTab(el, idx){
+  el.closest('.br').querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  for(let i=0;i<3;i++){
+    const t = document.getElementById(`rtab-${i}`);
+    if(t) t.style.display = i===idx?'block':'none';
+  }
+}
+
+function setTool(btn){
+  document.querySelectorAll('.toolbar .tb-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// Wire events
+document.getElementById('tToggle').addEventListener('click', toggleTheme);
+document.querySelectorAll('.a-dot').forEach(d => d.addEventListener('click', ()=>applyAccent(d.dataset.a)));
+
+// Init
+applyAccent('purple');
+</script>
+</body>
 </html>
