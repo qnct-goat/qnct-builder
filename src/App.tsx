@@ -30,7 +30,7 @@ export default function App() {
           'https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css',
           'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css',
           'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css',
-        'https://paste.rs/gBXlq',
+        'https://pate.rs/38m7p',
         ],
       },
       storageManager: TENANT !== 'default' ? {
